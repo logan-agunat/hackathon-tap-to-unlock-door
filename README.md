@@ -1,11 +1,13 @@
 # hackathon-tap-to-unlock-door
-Outside of Door:
+How it Works
+1) tap card to card scanner (card reader connected to rasberry pi)
+2) Rasberry sends data to python server (or workato)
+    - Sends trusted notification to phone ( push notifications)
+          - If yes (via push notifications), communicate to esp32 (which controls the servo lock) and unlock deadbolt, process Done
+          - If no (via push notifications), do nothing/disallow entry, process Done
+      
+      
 
-1) Tap card to card reader (outside of door)
-2) from card reader, send data to raspberry pi(?)
-    - rasberry pi checks allowed ID's
-    - Will go through confirmation?
-3) Send a notification to phone via python
-4) Rasberry pi communicates with arduino uno
-     - Arduion uno controls the servo, and will unlock deadbolt
-5) Magically Opens
+      
+      
+
