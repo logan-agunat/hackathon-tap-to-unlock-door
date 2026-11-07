@@ -1,0 +1,27 @@
+#include <Servo.h>
+
+Servo myServo;
+const int buttonPin = 2;
+bool atStart = true;
+
+
+
+
+void setup() {
+  // put your setup code here, to run once:
+  myServo.attach(9);
+  pinMode(buttonPin, INPUT_PULLUP);
+  myServo.write(0);
+  
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  if(digitalRead(buttonPin) == LOW){ //button pressed
+    atStart = !atStart;
+    myServo.write(atStart ? 0:120);
+    delay(300);  //debouncer
+    while(digitalRead(buttonPin) == LOW); //wait for release
+
+  }
+}
