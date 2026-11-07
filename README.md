@@ -5,7 +5,8 @@ How it Works
     - Sends trusted notification to phone ( push notifications)
           - If yes (via push notifications), communicate to esp32 (which controls the servo lock) and unlock deadbolt, process Done
           - If no (via push notifications), do nothing/disallow entry, process Done
-      -Note: once card is scanned, number is saved and is made a trusted user
+      -Note: once card is scanned, number is saved and is made a trusted user (regardless)
+      - number is a rolling number that is processed by scanner
       
       
 
