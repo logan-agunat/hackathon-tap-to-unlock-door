@@ -24,6 +24,7 @@ RATE_LIMIT_WAIT = 30      # seconds to wait after a 429
 # =====================================================================
 servo = AngularServo(
     SERVO_PIN,
+    
     min_angle=0,
     max_angle=180,
     min_pulse_width=0.0005,
