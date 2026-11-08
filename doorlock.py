@@ -2,7 +2,7 @@ import json
 import time
 
 import requests
-from gpiozero import AngularServo
+from gpiozero import AngularServo, LED
 
 REPLY_TOPIC =   "hackathon-door-replym4k9v8"
 ACK_TOPIC = "hackathon-door-ack-p3w7z2"
@@ -10,6 +10,7 @@ ACK_TOPIC = "hackathon-door-ack-p3w7z2"
 NTFY_BASE = "https://ntfy.sh"
 
 SERVO_PIN = 18            # GPIO (BCM) number, not the physical pin number
+LED_PIN = 17
 LOCKED_ANGLE = 0          # servo position when locked
 UNLOCKED_ANGLE = 120      # servo position when unlocked
 
@@ -29,6 +30,9 @@ servo = AngularServo(
     max_pulse_width=0.0024,
 )
 
+# LED SETUP
+led = LED(LED_PIN)
+
 # =====================================================================
 # STATE: values the program remembers between loop passes
 # =====================================================================
@@ -37,6 +41,9 @@ unlocked_at = 0.0         # time.monotonic() when the last unlock happened
 last_ntfy_id = ""         # id of the newest message seen, so each is read only once
 baselined = False         # False until the first poll has skipped old messages
 
+# LED FEEDBACK
+def blink(times: int, on: float = 0.5, off: float = 0.5) -> None:
+    led.blink(on_time=on, off_time=off, n=times, background=True)
 
 # =====================================================================
 # STEP 3: MOVE THE SERVO
@@ -65,29 +72,43 @@ def send_ack(text: str) -> None:
 # =====================================================================
 def do_command(cmd: str) -> None:
     global unlocked_at
-
+ 
     cmd = cmd.strip().lower()    # "Unlock" and "unlock" are treated the same
     print(f">>> TRIGGER RECEIVED: {cmd}")
+ 
+    # Start the blink BEFORE the network ack, so you see it instantly
+    # even if the ack POST is slow.
+    if cmd == "unlock":
+        blink(3)
+    elif cmd == "deny":
+        blink(1, on=1.0, off=0.2)
+    elif cmd == "lock":
+        blink(2)
+    elif cmd == "triggered":
+        blink(2, on=0.5, off=0.3)
+    else:
+        blink(5, on=0.05, off=0.05)
+ 
     send_ack(f"Board received: {cmd}")      # phone notification
-
+ 
     if cmd == "unlock":                     # you tapped [Yes]
         move_servo(False)                   # open the door
         unlocked_at = time.monotonic()      # start the relock countdown (a second unlock restarts it)
         print("UNLOCKED (approved)")
         send_ack("Door unlocked")
-
+ 
     elif cmd == "deny":                     # you tapped [No]
         print("DENIED, door stays locked")  # no servo movement at all
         send_ack("Request denied")
-
+ 
     elif cmd == "lock":                     # optional: lock immediately
         move_servo(True)
         print("LOCKED")
-
+ 
     elif cmd == "triggered":                # ntfy's default text for an empty message
         print("Trigger confirmed (no command in body)")
         send_ack("Triggered, but no unlock/deny command was sent")
-
+ 
     else:                                   # anything else is ignored for safety
         print(f"Ignored unknown reply: {cmd}")
 
@@ -187,6 +208,7 @@ def main() -> None:
     except KeyboardInterrupt:                     # Ctrl+C: leave the door locked and exit
         print("\nStopping, locking door.")
         move_servo(True)
+        led.off()
         time.sleep(0.5)
         servo.detach()
 
