@@ -221,7 +221,7 @@ def main() -> None:
             next_poll_time = time.monotonic() + poll_delay
 
         time.sleep(0.2)                 # put a tiny pause here so that we can check the relock timer and
-                                        # whether its time to poll ntfy
+                                        # whether its time to poll ntfy, using it for the polling
 
 
 
